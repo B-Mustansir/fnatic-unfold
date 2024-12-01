@@ -1,4 +1,4 @@
-import { ConnectWallet } from "@thirdweb-dev/react";
+// import { ConnectWallet } from "@thirdweb-dev/react";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import LoginButton from "./okto/loginButton";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -28,7 +29,7 @@ export default function Navbar() {
           <NavigationMenuList>
             <NavigationMenuItem>
               <NavigationMenuTrigger
-                className={`text-white hover:text-gray-600 ${
+                className={`text-black hover:text-gray-600 ${
                   pathname === "/trade" ? "bg-gray-800" : ""
                 }`}
               >
@@ -42,7 +43,7 @@ export default function Navbar() {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuTrigger
-                className={`text-white hover:text-gray-600 ${
+                className={`text-black hover:text-gray-600 ${
                   pathname === "/explore" ? "bg-gray-800" : ""
                 }`}
               >
@@ -56,7 +57,7 @@ export default function Navbar() {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuTrigger
-                className={`text-white hover:text-gray-600 ${
+                className={`text-black hover:text-gray-800 ${
                   pathname === "/pools" ? "bg-gray-800" : ""
                 }`}
               >
@@ -72,7 +73,8 @@ export default function Navbar() {
           <NavigationMenuIndicator />
           <NavigationMenuViewport />
         </NavigationMenu>
-        <ConnectWallet />
+        {/* <ConnectWallet /> */}
+        <LoginButton/>
       </div>
     </nav>
   );
