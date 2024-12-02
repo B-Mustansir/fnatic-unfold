@@ -1,14 +1,5 @@
-// import { ConnectWallet } from "@thirdweb-dev/react";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
-} from "@/components/ui/navigation-menu";
+'use client'
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LoginButton from "./okto/loginButton";
@@ -25,57 +16,42 @@ export default function Navbar() {
         SmartSwap
       </Link>
       <div className="flex items-center space-x-4">
-        <NavigationMenu>
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger
-                className={`text-black hover:text-gray-600 ${
-                  pathname === "/trade" ? "bg-gray-800" : ""
-                }`}
-              >
-                Trade
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <Link href="/trade" passHref>
-                  <NavigationMenuLink>Trade</NavigationMenuLink>
-                </Link>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger
-                className={`text-black hover:text-gray-600 ${
-                  pathname === "/explore" ? "bg-gray-800" : ""
-                }`}
-              >
-                Explore
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <Link href="/explore" passHref>
-                  <NavigationMenuLink>Explore</NavigationMenuLink>
-                </Link>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger
-                className={`text-black hover:text-gray-800 ${
-                  pathname === "/pools" ? "bg-gray-800" : ""
-                }`}
-              >
-                Pools
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <Link href="/pools" passHref>
-                  <NavigationMenuLink>Pools</NavigationMenuLink>
-                </Link>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-          <NavigationMenuIndicator />
-          <NavigationMenuViewport />
-        </NavigationMenu>
-        {/* <ConnectWallet /> */}
-        <LoginButton/>
+        <div className="flex space-x-4">
+          <NavLink href="/trade" currentPath={pathname}>
+            Trade
+          </NavLink>
+          <NavLink href="/pools" currentPath={pathname}>
+            Pools
+          </NavLink>
+          <NavLink href="/trading-bots" currentPath={pathname}>
+            Trading Bots
+          </NavLink>
+        </div>
+        <LoginButton />
       </div>
     </nav>
   );
 }
+
+interface NavLinkProps {
+  href: string;
+  currentPath: string;
+  children: React.ReactNode;
+}
+
+function NavLink({ href, currentPath, children }: NavLinkProps) {
+  const isActive = currentPath === href;
+  return (
+    <Link
+      href={href}
+      className={`px-3 py-2 rounded-md text-sm font-medium ${
+        isActive
+          ? "bg-gray-800 text-white"
+          : "text-gray-300 hover:bg-gray-700 hover:text-white"
+      }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
