@@ -28,9 +28,9 @@ To run the Smartswap project locally, follow these steps:
 
 1. **Clone the Repository**:
    ```bash
-   git clone <repository-url>
-   cd SmartSwap-unfold
-   cd SmartSwap-app
+   git clone [https://github.com/B-Mustansir/fnatic-unfold.git](https://github.com/B-Mustansir/fnatic-unfold.git)
+   cd fnatic-unfold
+   cd fnatic-app
     ```
 2. **Install Dependencies**:
    ```bash
