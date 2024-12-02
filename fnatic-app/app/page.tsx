@@ -1,15 +1,23 @@
 'use client'
 
-import React from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, Zap, Shield, TrendingUp } from "lucide-react";
-import { Button } from "../components/ui/button";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Zap, Shield, TrendingUp, Bot } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import ModernAIChatbot from "@/components/aiChatBot";
 
 export default function Home() {
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+
+  const toggleChatbot = () => {
+    setIsChatbotOpen(!isChatbotOpen);
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white overflow-hidden">
       <div className="container mx-auto px-4 py-16 relative">
+        {/* Existing content */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -33,6 +41,7 @@ export default function Home() {
           </Link>
         </motion.div>
 
+        {/* Feature grid */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             { icon: Zap, title: "Lightning Fast", description: "Execute trades with minimal latency" },
@@ -53,6 +62,7 @@ export default function Home() {
           ))}
         </div>
 
+        {/* Background effects */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-violet-900 rounded-full filter blur-[120px] opacity-20 animate-pulse" />
 
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
@@ -72,7 +82,33 @@ export default function Home() {
             />
           ))}
         </div>
+
+        {/* Chatbot toggle button */}
+        <motion.button
+          className="fixed bottom-4 right-4 bg-violet-500 text-white p-3 rounded-full shadow-lg hover:bg-violet-600 transition-colors duration-300 z-50"
+          onClick={toggleChatbot}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <Bot size={24} />
+        </motion.button>
+
+        {/* Chatbot component */}
+        <AnimatePresence>
+          {isChatbotOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: 300 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 300 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+              className="fixed top-0 right-0 w-full sm:w-96 h-full z-50"
+            >
+              <ModernAIChatbot onClose={toggleChatbot} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 }
+
