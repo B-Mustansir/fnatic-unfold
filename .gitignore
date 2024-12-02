@@ -1,3 +1,7 @@
 
 fnatic-app/.env
 fnatic-trading-bots/.env
+/fnatic-trading-bots/__pycache__
+*.pyc
+*.pyd
+/fnatic-trading-bots/env

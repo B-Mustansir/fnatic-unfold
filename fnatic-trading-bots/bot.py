@@ -12,18 +12,19 @@ import requests
 
 load_dotenv()
 
-def get_crypto_price(crypto_name):
+def get_crypto_price(crypto_slug):
     try:
-        url = f"https://api.coingecko.com/api/v3/simple/price?ids={crypto_name}&vs_currencies=usd"
-        response = requests.get(url)
+        url = f"https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?slug={crypto_slug}"
+        headers = {
+            'X-CMC_PRO_API_KEY': os.environ.get("COINMARKETCAP_API_KEY")
+        }
+        response = requests.get(url, headers=headers)
+
         if response.status_code == 200:
             data = response.json()
-            if crypto_name in data:
-                price = data[crypto_name]['usd']
-                return price
-            else:
-                print(f"Error: Cryptocurrency '{crypto_name}' not found in CoinGecko data.")
-                return None
+            crypto_id = list(data['data'].keys())[0]  # Get the first (and only) key in the 'data' dictionary
+            price = data['data'][crypto_id]['quote']['USD']['price']
+            return price
         else:
             print(f"Error: Failed to fetch data. Status code: {response.status_code}")
             return None
@@ -34,11 +35,16 @@ def get_crypto_price(crypto_name):
 API_KEY_NAME = os.environ.get("CDP_API_KEY_NAME")
 PRIVATE_KEY = os.environ.get("CDP_PRIVATE_KEY", "").replace('\\n', '\n')
 
-class TradingAgent(Agent):
-    def __init__(self, name, wallet):
-        super().__init__(name=name, wallet=wallet)
-        self.trading_balance = 0.0
-        self.transaction_history = []
+from pydantic import BaseModel, Field
+from typing import List, Any
+
+class TradingAgent(BaseModel):
+    name: str
+    wallet: str
+    transaction_history: List[Any] = Field(default_factory=list)  # Use default_factory to initialize as empty list
+
+    def __init__(self, name: str, wallet: str, **kwargs):
+        super().__init__(name=name, wallet=wallet, **kwargs)
 
     def analyze_market(self, market_data):
         prompt = (
@@ -51,12 +57,13 @@ class TradingAgent(Agent):
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
         )
         response = client.chat.completions.create(
-            model="gpt-35-turbo",
+            model="editai-gpt-4o",
             messages=[
                 {"role": "system", "content": "Be a smart professional experienced Trader"},
                 {"role": "user", "content": prompt}
             ]
         )
+        print(f"Trading advice: {response.choices[0].message.content}")
         return response.choices[0].message.content
 
     def execute_trade(self, action, amount, asset, market_data):
@@ -145,8 +152,13 @@ class TradingAgent(Agent):
         print(f"Trading Advice: {advice}")
 
         if "BUY" in advice.upper():
-            amount_to_buy = self.wallet.balance / market_data['MTC']['price']
-            self.execute_trade("BUY", amount_to_buy, "MTC", market_data)
+            asset = "MTC"  # Replace with the appropriate asset based on your use case
+            asset_price = market_data.get(asset, {}).get('price')
+            if asset_price:
+                amount_to_buy = self.wallet.balance(asset) / asset_price
+                self.execute_trade("BUY", amount_to_buy, asset, market_data)
+            else:
+                print("Market data for MTC is missing or invalid.")
         elif "SELL" in advice.upper():
             self.execute_trade("SELL", 0.0001, "MTC", market_data)
         else:
@@ -154,14 +166,17 @@ class TradingAgent(Agent):
 
         self.show_portfolio(market_data)
 
-def fetch_market_data():
-    user_data = {"tweet_analysis": [{"coin_name": "Bitcoin", "coin_review": 1}, {"coin_name": "Ethereum", "coin_review": 0}, {"coin_name": "Dogecoin", "coin_review": -1}]}
-    crypto_price_data = []
-    for crypto in user_data:
-        crypto_price_data.append(get_crypto_price(crypto['tweet_analysis']['coin_name']))
 
-    f_market_data = f"User preference over social sentiments is str({user_data}) and there market prices recently are {crypto_price_data}"
-    return f_market_data
+def fetch_market_data():
+    user_data = {"tweet_analysis": [{"coin_name": "bitcoin", "coin_review": 1}, {"coin_name": "ethereum", "coin_review": 0}, {"coin_name": "dogecoin", "coin_review": -1}]}
+    market_data = {}
+
+    for analysis in user_data['tweet_analysis']:
+        crypto_name = analysis['coin_name']
+        price = get_crypto_price(crypto_name)
+        if price:
+            market_data[crypto_name.upper()] = {"price": price, "sentiment": analysis['coin_review']}
+    return market_data
 
 while True:
     Cdp.configure(API_KEY_NAME, PRIVATE_KEY)
@@ -170,6 +185,7 @@ while True:
     print(f"Faucet transaction: {faucet}")
     print(f"Agent wallet address: {agent_wallet.default_address.address_id}")
 
-    trading_agent = TradingAgent(name="Agent1", wallet=agent_wallet)
+    # trading_agent = TradingAgent(name="Agent1", wallet=agent_wallet)
+    trading_agent = TradingAgent(name="Agent1", wallet=str(agent_wallet))
     market_data = fetch_market_data()
     trading_agent.auto_trade(market_data)
